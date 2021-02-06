@@ -1,104 +1,115 @@
 package com.example.remembereverythingfromfirax;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.DialogFragment;
 
-import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
-import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
-import android.widget.DatePicker;
 import android.widget.TextView;
 import android.widget.TimePicker;
 
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.Date;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener {
 
-    private static final String TAG = "MainActivity"; //date
-    private TextView mDisplayDate; //date
-    private DatePickerDialog.OnDateSetListener mDateSetListener; //date
 
-    private TextView textViewTime; //time
-    private int hourTime, minuteTime; //time
+    private TextView editTextTime;
+    private int tHour, tMinute;
+
+    BottomNavigationView bottomNavigationView; //меню
+    private static final String TAG = "MainActivity"; //меню
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        textViewTime = findViewById(R.id.editTextTime); //time
 
-        textViewTime.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                TimePickerDialog timePickerDialog = new TimePickerDialog(
-                        MainActivity.this,
-                        android.R.style.Theme_Holo_Light_Dialog_MinWidth,
-                        new TimePickerDialog.OnTimeSetListener() {
-                            @Override
-                            public void onTimeSet(TimePicker timePicker, int hourOfDay, int minute) {
-                                hourTime = hourOfDay;
-                                minuteTime = minute;
-                                String time = hourTime + ":" + minuteTime;
-                                SimpleDateFormat f24Hours = new SimpleDateFormat(
-                                        "HH:mm"
-                                );
-                                try {
-                                    Date date = f24Hours.parse(time);
-                                    SimpleDateFormat f12Hours = new SimpleDateFormat(
-                                            "hh:mm aa"
-                                    );
-                                    textViewTime.setText(f24Hours.format(date));
-                                } catch (ParseException e) {
-                                    e.printStackTrace();
-                                }
-                            }
-                        }, 12, 0, true
-                );
-                timePickerDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-                timePickerDialog.updateTime(hourTime, minuteTime);
-                timePickerDialog.show();
-            }
-        });
 
-        //установка даты начало
-        mDisplayDate = (TextView) findViewById(R.id.editTextDate);
+        bottomNavigationView = findViewById(R.id.bottom_navigation);
 
-        mDisplayDate.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Calendar cal = Calendar.getInstance();
-                int year = cal.get(Calendar.YEAR);
-                int month = cal.get(Calendar.MONTH);
-                int day = cal.get(Calendar.DAY_OF_MONTH);
 
-                DatePickerDialog dialog = new DatePickerDialog(MainActivity.this,
-                        android.R.style.Theme_Holo_Light_Dialog_MinWidth,
-                        mDateSetListener,
-                        year, month, day);
-                dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-                dialog.show();
-            }
-        });
+        bottomNavigationView.setOnNavigationItemSelectedListener(this);
+getSupportFragmentManager().beginTransaction().replace(R.id.fragmentContainer, new HomeFragment()).commit(); // меню по умолчанию
+//        editTextTime = findViewById(R.id.editTextTime);
+//
+//        editTextTime.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                TimePickerDialog timePickerDialog = new TimePickerDialog(
+//                        MainActivity.this,
+//                        android.R.style.Theme_Material_Light_Dialog_MinWidth,
+//                        new TimePickerDialog.OnTimeSetListener() {
+//                            @Override
+//                            public void onTimeSet(TimePicker timePicker, int hourOfDay, int minute) {
+//                                tHour = hourOfDay;
+//                                tMinute = minute;
+//                                String time = tHour + ":" + tMinute;
+//                                SimpleDateFormat f24Hours = new SimpleDateFormat(
+//                                        "HH:mm"
+//                                );
+//                                try {
+//                                    Date date = f24Hours.parse(time);
+//                                    SimpleDateFormat f12Hours = new SimpleDateFormat(
+//                                            "hh:mm aa"
+//                                    );
+//                                    editTextTime.setText(f24Hours.format(date));
+//                                } catch (ParseException e) {
+//                                    e.printStackTrace();
+//                                }
+//                            }
+//                        }, 12, 0, true
+//                );
+//                timePickerDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+//                timePickerDialog.updateTime(tHour, tMinute);
+//                timePickerDialog.show();
+//            }
+//        });
 
-        mDateSetListener = new DatePickerDialog.OnDateSetListener() {
-            @Override
-            public void onDateSet(DatePicker datePicker, int year, int month, int day) {
-                month = month + 1;
-                Log.d(TAG, "onDateSet: mm/dd/yyy: " + month + "/" + day + "/" + year);
-
-                String date = day + "/" + month + "/" + year;
-                mDisplayDate.setText(date);
-            }
-        };
-        //установка даты конец
     }
 
+    List_Of_Reminders_Fragment list = new List_Of_Reminders_Fragment();
+    ShoppingFragment shopping = new ShoppingFragment();
+    HomeFragment home = new HomeFragment();
 
+    public void showTimePickerDialog(View v) {
+        DialogFragment newFragment = new HomeFragment();
+        newFragment.show(getSupportFragmentManager(), "timePicker");
+    }
+
+    public void showDatePickerDialog(View v) {
+        DialogFragment newFragment = new DatePickerFragment();
+        newFragment.show(getSupportFragmentManager(), "datePicker");
+    }
+
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        switch (item.getItemId()) {
+
+            case R.id.miHome:
+                getSupportFragmentManager().beginTransaction().replace(R.id.fragmentContainer, home).commit();
+                break;
+
+            case R.id.miListOfReminders:
+                getSupportFragmentManager().beginTransaction().replace(R.id.fragmentContainer, list).commit();
+                break;
+
+
+            case R.id.miShopping:
+                getSupportFragmentManager().beginTransaction().replace(R.id.fragmentContainer, shopping).commit();
+                break;
+        }
+        return true;
+
+    }
 }
